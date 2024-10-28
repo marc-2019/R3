@@ -1,0 +1,120 @@
+# R3 Data Management API Documentation
+
+## Overview
+The Data Management API provides real-time access to system data, backup management, and health monitoring.
+
+## Authentication
+All endpoints require a valid JWT token in the Authorization header:
+```http
+Authorization: Bearer <token>
+```
+
+## WebSocket Connection
+```typescript
+const ws = new WebSocket('ws://your-domain/api/ws/data');
+ws.onmessage = (event) => {
+  const update = JSON.parse(event.data);
+  // Handle update based on type
+  switch(update.type) {
+    case 'health':
+      // Update system health indicators
+      break;
+    case 'backup':
+      // Update backup status
+      break;
+    case 'system':
+      // Update system metrics
+      break;
+    case 'alert':
+      // Handle system alerts
+      break;
+  }
+};
+```
+
+## REST Endpoints
+
+### Get System Status
+```http
+GET /api/data?action=status
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "lastCheck": "2024-01-28T15:00:00Z",
+  "metrics": {
+    "storage": {
+      "total": "100GB",
+      "used": "45GB",
+      "free": "55GB"
+    },
+    "backups": {
+      "count": 5,
+      "lastBackup": "2024-01-28T03:00:00Z",
+      "nextScheduled": "2024-01-29T03:00:00Z"
+    }
+  }
+}
+```
+
+### Get Backup History
+```http
+GET /api/data?action=backups
+```
+
+Response:
+```json
+{
+  "backups": [
+    {
+      "id": "backup_20240128_030000",
+      "timestamp": "2024-01-28T03:00:00Z",
+      "size": "2.3GB",
+      "status": "success",
+      "type": "automated"
+    }
+  ]
+}
+```
+
+### Trigger Backup
+```http
+POST /api/data
+Content-Type: application/json
+
+{
+  "action": "backup",
+  "type": "manual"
+}
+```
+
+Response:
+```json
+{
+  "status": "initiated",
+  "backupId": "backup_20240128_153000",
+  "estimated_completion": "2024-01-28T15:35:00Z"
+}
+```
+
+### Restore from Backup
+```http
+POST /api/data
+Content-Type: application/json
+
+{
+  "action": "restore",
+  "backupId": "backup_20240128_030000"
+}
+```
+
+Response:
+```json
+{
+  "status": "initiated",
+  "restoreId": "restore_20240128_153500",
+  "estimated_completion": "2024-01-28T16:00:00Z"
+}
+```

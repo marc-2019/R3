@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://user:pass@db:5432/r3_prod
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=r3_prod
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+
+  root-node:
+    build:
+      context: ./docker/root-node
+      dockerfile: Dockerfile.prod
+    volumes:
+      - root_node_data:/root/data
+
+  reality2:
+    build:
+      context: ./docker/reality2
+      dockerfile: Dockerfile.prod
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/reality2_prod
+
+volumes:
+  postgres_data:
+  redis_data:
+  root_node_data:

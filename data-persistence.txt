@@ -1,0 +1,18 @@
+# Data Persistence Strategy
+
+## Overview
+This guide explains how to maintain local data persistence across updates and rebuilds.
+
+## Directory Structure
+```bash
+R3/
+├── data/                     # Persistent data directory
+│   ├── postgres/            # PostgreSQL data
+│   ├── redis/               # Redis data
+│   ├── root-network/        # Root Network node data
+│   └── reality2/            # Reality2 system data
+├── docker/                  # Docker configurations
+└── scripts/                 # Utility scripts
+```
+
+## Updated Docker Configuration

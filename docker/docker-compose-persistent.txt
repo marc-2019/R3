@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  dev-db:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: r3_dev
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data  # Local directory mapping
+    restart: unless-stopped  # Automatically restart
+
+  dev-redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data  # Local directory mapping
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf  # Config file
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+
+  dev-mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - ./data/mailhog:/maildir  # Local mail storage
+    restart: unless-stopped
+
+  root-node-dev:
+    build:
+      context: ./docker/root-node
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./data/root-network:/root/data  # Local directory mapping
+    restart: unless-stopped
+
+  reality2-dev:
+    build:
+      context: ./docker/reality2
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@dev-db:5432/reality2_dev
+    volumes:
+      - ./data/reality2:/app/data  # Local directory mapping
+    restart: unless-stopped

@@ -1,0 +1,56 @@
+flowchart TD
+    subgraph "Initial Setup"
+        A[Clone Repository] --> B[Run setup.sh]
+        B --> C{Environment Type}
+    end
+
+    subgraph "Development Environment"
+        C -->|Local Dev| D[Install Dependencies]
+        D --> E[Configure .env.local]
+        E --> F[Run Docker Dev Services]
+        F --> G[Start Development Server]
+        
+        G --> H{Development Tasks}
+        H --> I[npm run dev]
+        H --> J[npm test]
+        H --> K[npm run lint]
+    end
+
+    subgraph "Test Environment"
+        C -->|Test| L[Install Dependencies]
+        L --> M[Configure .env.test]
+        M --> N[Run Test Services]
+        N --> O[Run Test Suite]
+    end
+
+    subgraph "CI Environment"
+        C -->|CI| P[GitHub Actions]
+        P --> Q[Run Tests]
+        Q --> R[Build]
+        R --> S[Deploy if main]
+    end
+
+    subgraph "Local Docker Services"
+        T[PostgreSQL]
+        U[Redis]
+        V[MailHog]
+        W[Root Network]
+        X[Reality2]
+        F --> T
+        F --> U
+        F --> V
+        F --> W
+        F --> X
+    end
+
+    classDef setup fill:#2563eb,color:white;
+    classDef dev fill:#059669,color:white;
+    classDef test fill:#dc2626,color:white;
+    classDef ci fill:#9333ea,color:white;
+    classDef services fill:#4b5563,color:white;
+
+    class A,B,C setup;
+    class D,E,F,G,H,I,J,K dev;
+    class L,M,N,O test;
+    class P,Q,R,S ci;
+    class T,U,V,W,X services;
