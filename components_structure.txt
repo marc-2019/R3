@@ -1,0 +1,6 @@
+D:\R3\node_modules\next\dist\client\components
+D:\R3\node_modules\next\dist\client\components\react-dev-overlay\internal\components
+D:\R3\node_modules\next\dist\esm\client\components
+D:\R3\node_modules\next\dist\esm\client\components\react-dev-overlay\internal\components
+D:\R3\src\components
+D:\R3\src\app\components
