@@ -8,9 +8,27 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String       @id @default(uuid())
+  email       String       @unique
+  name        String?
+  dataAccess  DataAccess[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model DataAccess {
+  id           String       @id @default(uuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  permissions  Permission[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Permission {
+  id           String       @id @default(uuid())
+  name         String
+  dataAccess   DataAccess[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
