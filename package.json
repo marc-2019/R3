@@ -38,20 +38,26 @@
     "testEnvironment": "jsdom",
     "setupFilesAfterEnv": ["./jest-setup.js"],
     "transform": {
-      "^.+\\.(ts|tsx)$": ["ts-jest", {
-        "useESM": true
-      }]
+      "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/.next/"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ],
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js",
       "jsx",
-      "json"
-    ],
-    "extensionsToTreatAsEsm": [".ts", ".tsx"]
+      "json",
+      "node"
+    ]
   }
 }
