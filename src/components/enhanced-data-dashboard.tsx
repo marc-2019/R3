@@ -26,8 +26,63 @@ interface DataAccessControl {
   lastAccess?: string;
 }
 
+interface HealthStatus {
+  status: 'healthy' | 'warning' | 'error';
+  size: string;
+  lastCheck: string;
+  growth: string;
+  warning?: string;
+}
+
+interface DataHealth {
+  postgres: HealthStatus;
+  redis: HealthStatus;
+  rootNetwork: HealthStatus;
+  reality2: HealthStatus;
+}
+
+interface BackupStatus {
+  lastBackup: string;
+  nextScheduled: string;
+  backupCount: number;
+  totalSize: string;
+}
+
 const DataDashboard = () => {
-  // ... Previous state declarations ...
+  const [dataHealth, setDataHealth] = useState<DataHealth>({
+    postgres: {
+      status: 'healthy',
+      size: '1.5 GB',
+      lastCheck: '2024-01-28 15:00:00',
+      growth: '+2.5% this week'
+    },
+    redis: {
+      status: 'healthy',
+      size: '256 MB',
+      lastCheck: '2024-01-28 15:00:00',
+      growth: '+1.2% this week'
+    },
+    rootNetwork: {
+      status: 'healthy',
+      size: '500 MB',
+      lastCheck: '2024-01-28 15:00:00',
+      growth: '+5% this week'
+    },
+    reality2: {
+      status: 'warning',
+      size: '750 MB',
+      lastCheck: '2024-01-28 15:00:00',
+      growth: '+8% this week',
+      warning: 'High growth rate detected'
+    }
+  });
+  
+  const [backupStatus, setBackupStatus] = useState<BackupStatus>({
+    lastBackup: '2024-01-28 15:30:00',
+    nextScheduled: '2024-01-29 03:00:00',
+    backupCount: 5,
+    totalSize: '2.3 GB'
+  });
 
   const [dataAccess, setDataAccess] = useState<DataAccessControl[]>([
     {
