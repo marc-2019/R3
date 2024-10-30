@@ -354,7 +354,7 @@ const PermissionManagement = () => {
     setRoles(prev => prev.map(role => {
       if (role.id !== selectedRole) return role;
 
-      const newPermissions = [...new Set([...role.permissions, ...template.permissions])];
+      const newPermissions = Array.from(new Set([...role.permissions, ...template.permissions]));
       const conflicts = validatePermissions(role.id, newPermissions);
       setConflicts(conflicts);
 
