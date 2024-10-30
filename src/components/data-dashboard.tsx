@@ -124,4 +124,184 @@ const DataDashboard = () => {
     }
   };
 
-  // Rest of the component remains the same...
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Data Management</h1>
+          <p className="text-gray-500">System data health and backup status</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={triggerBackup}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Backup Now
+          </button>
+        </div>
+      </div>
+
+      {/* Status Overview */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Save className="h-5 w-5 text-blue-500" />
+                <div>
+                  <div className="text-sm font-medium">Last Backup</div>
+                  <div className="text-2xl font-bold">{backupStatus.backupCount}</div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-500">{backupStatus.lastBackup}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HardDrive className="h-5 w-5 text-green-500" />
+                <div>
+                  <div className="text-sm font-medium">Total Size</div>
+                  <div className="text-2xl font-bold">{backupStatus.totalSize}</div>
+                </div>
+              </div>
+              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-purple-500" />
+                <div>
+                  <div className="text-sm font-medium">Next Backup</div>
+                  <div className="text-sm text-gray-500">{backupStatus.nextScheduled}</div>
+                </div>
+              </div>
+              <Settings className="h-4 w-4 text-gray-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-yellow-500" />
+                <div>
+                  <div className="text-sm font-medium">System Health</div>
+                  <div className="text-sm">
+                    {Object.values(dataHealth).every(h => h.status === 'healthy') ? (
+                      <span className="text-green-500">All Systems Healthy</span>
+                    ) : (
+                      <span className="text-yellow-500">Attention Required</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data Health */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            System Data Health
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {Object.entries(dataHealth).map(([system, health]) => (
+              <div key={system} className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-medium capitalize">{system}</div>
+                  <div className={`flex items-center gap-1 ${getStatusColor(health.status)}`}>
+                    {health.status === 'healthy' ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                    <span className="capitalize">{health.status}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-gray-500">Size:</div>
+                  <div>{health.size}</div>
+                  <div className="text-gray-500">Growth:</div>
+                  <div>{health.growth}</div>
+                  <div className="text-gray-500">Last Check:</div>
+                  <div>{health.lastCheck}</div>
+                </div>
+                {health.warning && (
+                  <Alert className="mt-2 bg-yellow-50 border-yellow-100">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                    <AlertDescription className="text-sm">
+                      {health.warning}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Backup History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Backup History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {backupHistory.map(backup => (
+              <div key={backup.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 rounded-full ${
+                    backup.status === 'success' ? 'bg-green-100' : 'bg-red-100'
+                  }`}>
+                    {backup.status === 'success' ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-medium">Backup {backup.id}</div>
+                    <div className="text-sm text-gray-500">{backup.timestamp}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="text-sm text-gray-500">
+                    <div>Size: {backup.size}</div>
+                    <div>Duration: {backup.duration}</div>
+                  </div>
+                  <button
+                    onClick={() => restoreBackup(backup.id)}
+                    className="px-3 py-1 border rounded-md hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    <span>Restore</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default DataDashboard;
