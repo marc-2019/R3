@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { subscribeToDataUpdates, type DataUpdate } from '@/services/websocket';
+import { subscribeToDataUpdates, type DataUpdate } from '@/services/websocket-service';
 import {
   HardDrive,
   Database,
