@@ -1,3 +1,5 @@
+# .github/workflows/ci.yml
+
 name: R3 CI Pipeline
 
 on:
@@ -11,7 +13,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  test:
+  test-linux:
+    name: Test (Linux)
     runs-on: ubuntu-latest
     
     services:
@@ -61,8 +64,70 @@ jobs:
         REDIS_URL: redis://localhost:6379
         NODE_ENV: test
 
+  test-windows:
+    name: Test (Windows)
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Set up Docker
+      uses: crazy-max/ghaction-setup-docker@v1
+      with:
+        version: latest
+    
+    - name: Start Docker services
+      run: |
+        docker compose up -d
+        timeout 30
+      shell: cmd
+
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Generate Prisma Client
+      run: npx prisma generate
+
+    - name: Run tests with verbose output
+      run: npm test -- --verbose
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/r3_test
+        REDIS_URL: redis://localhost:6379
+        NODE_ENV: test
+
+    # Create Windows setup artifacts
+    - name: Create Windows setup script
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo @echo off > setup-windows.bat
+        echo echo Setting up R3 System... >> setup-windows.bat
+        echo. >> setup-windows.bat
+        echo docker compose up -d >> setup-windows.bat
+        echo npm install >> setup-windows.bat
+        echo npx prisma generate >> setup-windows.bat
+        echo npx prisma db push >> setup-windows.bat
+        echo echo Setup complete! Run 'npm run dev' to start the application. >> setup-windows.bat
+      shell: cmd
+
+    - name: Upload Windows setup artifacts
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-setup
+        path: |
+          setup-windows.bat
+          docker-compose.yml
+          package.json
+          package-lock.json
+
   build-and-push:
-    needs: test
+    needs: [test-linux, test-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: read

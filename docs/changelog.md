@@ -36,3 +36,30 @@
 - Add real-time updates with Redis
 - Enhance settings UI with persistence
 - Add error handling and loading states
+
+
+# Changelog Update
+
+## [Unreleased] - 2024-10-31
+
+### Added
+- Settings management system with PostgreSQL persistence
+- Redis caching for settings
+- Zod validation for settings data
+- Loading and error states for settings UI
+- Type-safe settings store using Zustand
+
+### Changed
+- Enhanced settings page with real-time validation
+- Updated Prisma schema with SystemSettings model
+- Improved error handling in settings API
+
+### Dependencies Added
+- zod: For runtime type validation
+- ioredis: For Redis caching implementation
+
+## Technical Updates
+- Added validation middleware for settings API
+- Implemented settings persistence layer
+- Added Redis caching for improved performance
+- Enhanced error handling and loading states

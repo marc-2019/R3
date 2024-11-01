@@ -1,6 +1,7 @@
 // src/stores/settingsStore.ts
 
 import { create } from 'zustand';
+import axios from 'axios';
 
 interface DatabaseConfig {
   enabled: boolean;
@@ -22,67 +23,48 @@ interface NotificationSettings {
   maintenanceAlerts: boolean;
 }
 
-interface SettingsStore {
+interface SettingsState {
   settings: {
     databaseConfig: DatabaseConfig;
     networkSettings: NetworkSettings;
     notifications: NotificationSettings;
-  };
-  updateDatabaseConfig: (config: Partial<DatabaseConfig>) => void;
-  updateNetworkSettings: (settings: Partial<NetworkSettings>) => void;
-  updateNotifications: (settings: Partial<NotificationSettings>) => void;
-  resetSettings: () => void;
+  } | null;
+  loading: boolean;
+  error: string | null;
+  fetchSettings: () => Promise<void>;
+  updateSettings: (settings: Partial<SettingsState['settings']>) => Promise<void>;
 }
 
-const initialSettings = {
-  databaseConfig: {
-    enabled: false,
-    backupEnabled: false,
-  },
-  networkSettings: {
-    rootNetworkEnabled: false,
-    reality2Enabled: false,
-  },
-  notifications: {
-    emailNotifications: true,
-    systemAlerts: true,
-    maintenanceAlerts: true,
-  },
-};
+const useSettingsStore = create<SettingsState>((set) => ({
+  settings: null,
+  loading: false,
+  error: null,
 
-const useSettingsStore = create<SettingsStore>((set) => ({
-  settings: initialSettings,
-  updateDatabaseConfig: (config) =>
-    set((state) => ({
-      settings: {
-        ...state.settings,
-        databaseConfig: {
-          ...state.settings.databaseConfig,
-          ...config,
-        },
-      },
-    })),
-  updateNetworkSettings: (settings) =>
-    set((state) => ({
-      settings: {
-        ...state.settings,
-        networkSettings: {
-          ...state.settings.networkSettings,
-          ...settings,
-        },
-      },
-    })),
-  updateNotifications: (settings) =>
-    set((state) => ({
-      settings: {
-        ...state.settings,
-        notifications: {
-          ...state.settings.notifications,
-          ...settings,
-        },
-      },
-    })),
-  resetSettings: () => set({ settings: initialSettings }),
+  fetchSettings: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get('/api/settings');
+      set({ settings: response.data, loading: false });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch settings',
+        loading: false 
+      });
+    }
+  },
+
+  updateSettings: async (newSettings) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.put('/api/settings', newSettings);
+      set({ settings: response.data, loading: false });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to update settings',
+        loading: false 
+      });
+    }
+  },
 }));
 
 export default useSettingsStore;

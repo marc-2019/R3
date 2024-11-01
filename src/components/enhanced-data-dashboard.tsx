@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { subscribeToDataUpdates, type DataUpdate } from '@/services/websocket-service';
+import { websocketService, type DataUpdateType } from '@/services/websocket-service';
+import { DockerStatus } from '@/components/docker-status';
+
 import {
   HardDrive,
   Database,
@@ -17,6 +19,8 @@ import {
   Lock,
   Users
 } from 'lucide-react';
+
+<DockerStatus />
 
 interface DataAccessControl {
   userId: string;
@@ -102,32 +106,43 @@ const DataDashboard = () => {
   ]);
 
   useEffect(() => {
-    // Subscribe to real-time updates
-    const unsubscribe = subscribeToDataUpdates((update: DataUpdate) => {
-      switch (update.type) {
-        case 'health':
-          setDataHealth(prevHealth => ({
-            ...prevHealth,
-            ...update.data
-          }));
-          break;
-        case 'backup':
-          setBackupStatus(prevStatus => ({
-            ...prevStatus,
-            ...update.data
-          }));
-          break;
-        case 'system':
-          // Handle system updates
-          break;
-        case 'alert':
-          // Handle alerts
-          break;
-      }
+    // Connect to WebSocket
+    websocketService.connect();
+
+    // Subscribe to updates
+    const unsubscribeHealth = websocketService.subscribe('health', (updateData) => {
+      setDataHealth(prevHealth => ({
+        ...prevHealth,
+        ...updateData
+      }));
     });
 
-    return () => unsubscribe();
-  }, []);
+    const unsubscribeBackup = websocketService.subscribe('backup', (updateData) => {
+      setBackupStatus(prevStatus => ({
+        ...prevStatus,
+        ...updateData
+      }));
+    });
+
+    const unsubscribeSystem = websocketService.subscribe('system', (updateData) => {
+      // Handle system updates
+      console.log('System update:', updateData);
+    });
+
+    const unsubscribeAlert = websocketService.subscribe('alert', (updateData) => {
+      // Handle alerts
+      console.log('Alert received:', updateData);
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribeHealth();
+      unsubscribeBackup();
+      unsubscribeSystem();
+      unsubscribeAlert();
+      websocketService.close();
+    };
+}, []);
 
   // Access Control Panel
   const AccessControlPanel = () => (

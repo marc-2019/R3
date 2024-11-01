@@ -245,7 +245,7 @@ const PermissionManagement = () => {
               />
               
               {conflicts.length > 0 && (
-                <Alert variant="destructive">
+                <Alert variant="error">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Permission Conflicts Detected</AlertTitle>
                   <AlertDescription>

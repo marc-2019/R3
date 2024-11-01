@@ -1,5 +1,7 @@
-import './globals.css';
-import { Navbar } from '@/components/layout/Navbar';
+// src/app/layout.tsx
+
+import NavigationLayout from '@/components/NavigationLayout'
+import '@/app/globals.css'
 
 export default function RootLayout({
   children,
@@ -9,11 +11,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        <main className="max-w-7xl mx-auto px-4 py-6">
-          {children}
-        </main>
+        <NavigationLayout />
+        <main className="max-w-7xl mx-auto px-4">{children}</main>
       </body>
     </html>
-  );
+  )
 }

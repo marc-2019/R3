@@ -155,3 +155,56 @@ graph TB
 - Availability: 99.9%
 - Concurrent Users: 10,000+
 - Data Retention: 90 days
+
+
+# Architecture Update - Settings Management
+
+## Settings Management System
+
+### Data Flow
+```mermaid
+graph TD
+    UI[Settings UI] --> Store[Zustand Store]
+    Store --> API[Settings API]
+    API --> Cache[Redis Cache]
+    API --> DB[PostgreSQL]
+    Cache --> API
+```
+
+### Components
+1. **Data Layer**
+   - PostgreSQL for persistence
+   - Redis for caching
+   - Prisma for database access
+
+2. **API Layer**
+   - Validated endpoints
+   - Cache management
+   - Error handling
+
+3. **Application Layer**
+   - Zustand store for state management
+   - Type-safe interfaces
+   - Loading/error states
+
+4. **Validation Layer**
+   - Zod schemas
+   - Runtime type checking
+   - Error messaging
+
+### Security Considerations
+- Validated input/output
+- Type safety throughout
+- Cache invalidation strategies
+- Error handling and logging
+
+### Performance Optimizations
+- Redis caching
+- Optimistic updates
+- Proper loading states
+```
+
+Would you like me to:
+1. Update any other documentation files?
+2. Add more specific technical details to the architecture document?
+3. Create new documentation specifically for the settings system?

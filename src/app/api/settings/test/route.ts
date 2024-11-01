@@ -40,18 +40,22 @@ export async function GET() {
   } catch (error) {
     console.error('Database test failed:', error);
     
-    // Improved error handling with specific error types
+    // Improved error handling with type checking
     let errorMessage = 'Unknown error occurred';
     let statusCode = 500;
+    let errorType = 'UnknownError';
 
     if (error instanceof Prisma.PrismaClientInitializationError) {
       errorMessage = 'Failed to connect to database';
       statusCode = 503;
+      errorType = 'PrismaClientInitializationError';
     } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
       errorMessage = `Database request failed: ${error.message}`;
       statusCode = 400;
+      errorType = 'PrismaClientKnownRequestError';
     } else if (error instanceof Error) {
       errorMessage = error.message;
+      errorType = error.constructor.name;
     }
 
     return NextResponse.json(
@@ -59,11 +63,9 @@ export async function GET() {
         success: false, 
         error: 'Database test failed',
         details: errorMessage,
-        errorType: error.constructor.name  // This will help us debug the error type
+        errorType: errorType
       },
       { status: statusCode }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
