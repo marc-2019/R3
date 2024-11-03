@@ -3,7 +3,7 @@ version: '3.8'
 services:
   test-db:
     image: postgres:14-alpine
-    platform: linux/amd64  # Specify platform
+    platform: windows/amd64  # Change platform specification
     ports:
       - "5433:5432"
     environment:
@@ -17,8 +17,8 @@ services:
       retries: 5
 
   test-redis:
-    image: redis:alpine
-    platform: linux/amd64  # Specify platform
+    image: "redis:latest"  # Change to latest tag
+    platform: windows/amd64  # Change platform specification
     ports:
       - "6380:6379"
     healthcheck:

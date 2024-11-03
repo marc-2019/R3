@@ -77,46 +77,35 @@ jobs:
         node-version: '20'
         cache: 'npm'
 
+    - name: Set up WSL
+      run: |
+        wsl --install -d Ubuntu
+        wsl --set-default-version 2
+      shell: pwsh
+
     - name: Set up Docker
       uses: crazy-max/ghaction-setup-docker@v1
       with:
         version: latest
-        daemon-config: |
-          {
-            "experimental": true,
-            "features": {
-              "buildkit": true
-            },
-              "os": "linux"
-          }
 
     - name: Configure Docker for Linux containers
       run: |
-         docker version
-         docker pull ubuntu:latest  # Test Linux container pull
-         docker info | findstr "Operating System"
+        docker version
+        docker info | findstr "Operating System"
       shell: pwsh
-          
+      
+    # Add explicit image pulls
+    - name: Pull required images
+      run: |
+        docker pull postgres:14-alpine --platform linux/amd64
+        docker pull redis:latest --platform linux/amd64
+      shell: pwsh
+
     - name: Check Docker configuration
       run: |
         docker info
         Write-Host "Docker configuration verified"
       shell: pwsh
-        
-    - name: Verify Docker Compose file
-      run: |
-        if (!(Test-Path "docker/docker-compose.yml")) {
-          throw "docker/docker-compose.yml not found"
-        }
-      shell: pwsh
-    
-    - name: Verify Docker Compose files
-      run: |
-        if (!(Test-Path "docker/docker-compose-test.txt")) {
-          throw "docker/docker-compose-test.txt not found"
-        }
-      shell: pwsh
-    
     
     - name: Verify Docker Compose file
       run: |
@@ -142,7 +131,7 @@ jobs:
     - name: Check Docker status
       run: |
         docker ps
-        docker compose ps
+        docker compose -f docker/docker-compose-test.txt ps
       shell: pwsh
 
     - name: Install dependencies
