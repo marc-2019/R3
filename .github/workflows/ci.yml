@@ -64,7 +64,7 @@ jobs:
         REDIS_URL: redis://localhost:6379
         NODE_ENV: test
 
- test-windows:
+  test-windows:
     name: Test (Windows)
     runs-on: windows-latest
     
@@ -82,7 +82,6 @@ jobs:
       with:
         version: latest
     
-    # Update verify step with correct path
     - name: Verify Docker Compose file
       run: |
         if (!(Test-Path "docker/docker-compose.yml")) {
@@ -90,7 +89,6 @@ jobs:
         }
       shell: pwsh
 
-    # Update Docker services start
     - name: Verify Docker Compose files
       run: |
         if (!(Test-Path "docker/docker-compose-test.txt")) {
@@ -105,7 +103,6 @@ jobs:
         Start-Sleep -Seconds 30
       shell: pwsh
 
-    # Add status check
     - name: Check Docker status
       run: |
         docker ps
@@ -125,7 +122,6 @@ jobs:
         REDIS_URL: redis://localhost:6379
         NODE_ENV: test
 
-    # Update Windows setup script creation
     - name: Create Windows setup script
       if: github.ref == 'refs/heads/main'
       run: |
@@ -140,7 +136,6 @@ jobs:
         "@ > setup-windows.bat
       shell: pwsh
 
-    # Update artifact upload as well
     - name: Upload Windows setup artifacts
       if: github.ref == 'refs/heads/main'
       uses: actions/upload-artifact@v3
