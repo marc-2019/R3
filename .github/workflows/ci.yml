@@ -68,6 +68,31 @@ jobs:
     name: Test (Windows)
     runs-on: windows-latest
     
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: r3_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -76,48 +101,6 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-
-    - name: Set up Docker
-      uses: crazy-max/ghaction-setup-docker@v1
-      with:
-        version: latest
-
-    - name: Configure Docker
-      run: |
-        docker version
-        docker pull mcr.microsoft.com/windows/servercore:ltsc2022
-        docker info
-      shell: pwsh
-      
-    # Test with Windows-specific images
-    - name: Pull required images
-      run: |
-        docker pull dpage/pgadmin4:latest
-        docker pull bitnami/postgresql:latest
-        docker pull bitnami/redis:latest
-      shell: pwsh
-
-    - name: Verify Docker Compose files
-      run: |
-        if (!(Test-Path "docker/docker-compose-test.txt")) {
-          throw "docker/docker-compose-test.txt not found"
-        }
-      shell: pwsh
-
-    - name: Start Docker services
-      run: |
-        cd docker
-        docker compose -f docker-compose-test.txt up -d
-        Start-Sleep -Seconds 30
-      shell: pwsh
-
-    # Rest of the job remains the same...
-
-    - name: Check Docker status
-      run: |
-        docker ps
-        docker compose -f docker/docker-compose-test.txt ps
-      shell: pwsh
 
     - name: Install dependencies
       run: npm ci
