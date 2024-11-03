@@ -90,10 +90,33 @@ jobs:
               "os": "linux"
           }
 
-    - name: Switch to Linux containers
+    - name: Configure Docker for Linux containers
       run: |
-        & 'C:\Program Files\Docker\Docker\DockerCli.exe' -SwitchDaemon
+         docker version
+         docker pull ubuntu:latest  # Test Linux container pull
+         docker info | findstr "Operating System"
       shell: pwsh
+          
+    - name: Check Docker configuration
+      run: |
+        docker info
+        Write-Host "Docker configuration verified"
+      shell: pwsh
+        
+    - name: Verify Docker Compose file
+      run: |
+        if (!(Test-Path "docker/docker-compose.yml")) {
+          throw "docker/docker-compose.yml not found"
+        }
+      shell: pwsh
+    
+    - name: Verify Docker Compose files
+      run: |
+        if (!(Test-Path "docker/docker-compose-test.txt")) {
+          throw "docker/docker-compose-test.txt not found"
+        }
+      shell: pwsh
+    
     
     - name: Verify Docker Compose file
       run: |
