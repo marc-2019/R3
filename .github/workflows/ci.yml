@@ -87,7 +87,7 @@ jobs:
             "features": {
               "buildkit": true
             },
-              os": "linux"
+              "os": "linux"
           }
 
     - name: Switch to Linux containers
