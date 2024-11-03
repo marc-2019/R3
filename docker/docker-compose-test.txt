@@ -3,22 +3,35 @@ version: '3.8'
 services:
   test-db:
     image: postgres:14-alpine
+    platform: linux/amd64  # Specify platform
     ports:
       - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: r3_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   test-redis:
     image: redis:alpine
+    platform: linux/amd64  # Specify platform
     ports:
       - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   root-node-test:
     build:
       context: ./docker/root-node
       dockerfile: Dockerfile.test
+    platform: linux/amd64  # Specify platform
     ports:
       - "8546:8545"
 
@@ -26,6 +39,7 @@ services:
     build:
       context: ./docker/reality2
       dockerfile: Dockerfile.test
+    platform: linux/amd64  # Specify platform
     ports:
       - "3002:3001"
     environment:

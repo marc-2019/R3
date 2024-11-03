@@ -81,6 +81,11 @@ jobs:
       uses: crazy-max/ghaction-setup-docker@v1
       with:
         version: latest
+
+    - name: Switch to Linux containers
+      run: |
+        & 'C:\Program Files\Docker\Docker\DockerCli.exe' -SwitchDaemon
+      shell: pwsh
     
     - name: Verify Docker Compose file
       run: |
