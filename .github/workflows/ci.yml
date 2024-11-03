@@ -81,6 +81,14 @@ jobs:
       uses: crazy-max/ghaction-setup-docker@v1
       with:
         version: latest
+        daemon-config: |
+          {
+            "experimental": true,
+            "features": {
+              "buildkit": true
+            },
+              os": "linux"
+          }
 
     - name: Switch to Linux containers
       run: |
