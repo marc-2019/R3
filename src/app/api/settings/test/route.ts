@@ -2,7 +2,6 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -42,20 +41,15 @@ export async function GET() {
     
     let errorMessage = 'Unknown error occurred';
     let statusCode = 500;
-    let errorType = 'UnknownError';
 
     if (error instanceof Error) {
       errorMessage = error.message;
-      errorType = error.constructor.name;
-
-      // Check for specific Prisma errors
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError ||
-        error instanceof Prisma.PrismaClientUnknownRequestError ||
-        error instanceof Prisma.PrismaClientRustPanicError ||
-        error instanceof Prisma.PrismaClientValidationError
-      ) {
-        statusCode = 400;
+      
+      // Check error message content for classification
+      if (errorMessage.includes('connect')) {
+        statusCode = 503; // Service unavailable
+      } else if (errorMessage.includes('validation') || errorMessage.includes('constraint')) {
+        statusCode = 400; // Bad request
       }
     }
 
@@ -64,7 +58,7 @@ export async function GET() {
         success: false, 
         error: 'Database test failed',
         details: errorMessage,
-        errorType: errorType
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown'
       },
       { status: statusCode }
     );
