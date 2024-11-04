@@ -2,9 +2,6 @@
 
 import prisma from '@/lib/prisma';
 import { cacheService } from './cacheService';
-import { Prisma } from '@prisma/client';
-
-const SETTINGS_CACHE_KEY = 'system:settings';
 
 export interface SystemSettings {
   id: string;
@@ -28,61 +25,6 @@ export interface SystemSettings {
   updatedAt: Date;
 }
 
-// Type guard to validate database config
-const isDatabaseConfig = (value: unknown): value is SystemSettings['databaseConfig'] => {
-  if (!value || typeof value !== 'object') return false;
-  const config = value as SystemSettings['databaseConfig'];
-  return (
-    typeof config.enabled === 'boolean' &&
-    typeof config.backupEnabled === 'boolean'
-  );
-};
-
-// Type guard to validate network settings
-const isNetworkSettings = (value: unknown): value is SystemSettings['networkSettings'] => {
-  if (!value || typeof value !== 'object') return false;
-  const settings = value as SystemSettings['networkSettings'];
-  return (
-    typeof settings.rootNetworkEnabled === 'boolean' &&
-    typeof settings.reality2Enabled === 'boolean'
-  );
-};
-
-// Type guard to validate notifications
-const isNotifications = (value: unknown): value is SystemSettings['notifications'] => {
-  if (!value || typeof value !== 'object') return false;
-  const notifications = value as SystemSettings['notifications'];
-  return (
-    typeof notifications.emailNotifications === 'boolean' &&
-    typeof notifications.systemAlerts === 'boolean' &&
-    typeof notifications.maintenanceAlerts === 'boolean'
-  );
-};
-
-// Convert raw data to SystemSettings
-const convertToSystemSettings = (data: any): SystemSettings | null => {
-  if (!data || typeof data !== 'object') return null;
-  
-  try {
-    const settings: SystemSettings = {
-      id: data.id,
-      databaseConfig: data.databaseConfig,
-      networkSettings: data.networkSettings,
-      notifications: data.notifications,
-      updatedAt: new Date(data.updatedAt)
-    };
-
-    if (!isDatabaseConfig(settings.databaseConfig)) return null;
-    if (!isNetworkSettings(settings.networkSettings)) return null;
-    if (!isNotifications(settings.notifications)) return null;
-
-    return settings;
-  } catch (error) {
-    console.error('Error converting settings:', error);
-    return null;
-  }
-};
-
 export class SettingsService {
   async getSettings(): Promise<SystemSettings | null> {
     try {
@@ -98,12 +40,9 @@ export class SettingsService {
       });
 
       if (settings) {
-        const convertedSettings = convertToSystemSettings(settings);
-        if (convertedSettings) {
-          // Cache the settings for future requests
-          await cacheService.set(SETTINGS_CACHE_KEY, convertedSettings);
-          return convertedSettings;
-        }
+        const convertedSettings = settings as SystemSettings;
+        await cacheService.set(SETTINGS_CACHE_KEY, convertedSettings);
+        return convertedSettings;
       }
 
       return null;
@@ -118,9 +57,9 @@ export class SettingsService {
       const updated = await prisma.systemSettings.upsert({
         where: { id: settings.id || 'default' },
         update: {
-          databaseConfig: settings.databaseConfig as Prisma.InputJsonValue,
-          networkSettings: settings.networkSettings as Prisma.InputJsonValue,
-          notifications: settings.notifications as Prisma.InputJsonValue,
+          databaseConfig: settings.databaseConfig as any,
+          networkSettings: settings.networkSettings as any,
+          notifications: settings.notifications as any,
           updatedAt: new Date()
         },
         create: {
@@ -132,11 +71,7 @@ export class SettingsService {
         }
       });
 
-      const convertedSettings = convertToSystemSettings(updated);
-      if (!convertedSettings) {
-        throw new Error('Failed to convert settings after update');
-      }
-
+      const convertedSettings = updated as SystemSettings;
       await cacheService.set(SETTINGS_CACHE_KEY, convertedSettings);
       return convertedSettings;
     } catch (error) {
