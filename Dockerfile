@@ -20,8 +20,9 @@ COPY . .
 ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/r3_test"
 RUN npx prisma generate
 RUN npm run build
-# Create public directory if it doesn't exist
-RUN mkdir -p public
+
+# Create and populate public directory
+RUN mkdir -p public && touch public/.gitkeep
 
 # Production stage
 FROM node:20-alpine AS production
@@ -31,15 +32,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Create public directory first
+# Create public directory
 RUN mkdir -p public
 
 # Copy necessary files from builder
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
-# Try to copy contents of public if any exist
-COPY --from=builder /app/public/* ./public/ 2>/dev/null || true
+COPY --from=builder /app/public ./public/
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
