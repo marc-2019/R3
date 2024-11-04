@@ -17,7 +17,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-# Add Prisma generate step before build
+# Add environment variable for build
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/r3_test"
 RUN npx prisma generate
 RUN npm run build
 
@@ -33,7 +34,8 @@ ENV PORT=3000
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# Only copy public if it exists
+COPY --from=builder /app/public ./public 2>/dev/null || true
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
