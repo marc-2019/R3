@@ -65,8 +65,8 @@ jobs:
         NODE_ENV: test
 
   test-windows:
-    name: Test (Windows)
-    runs-on: windows-latest
+    name: Test (Windows Build)
+    runs-on: ubuntu-latest   # Changed to Linux runner for container support
     
     services:
       postgres:
@@ -118,7 +118,7 @@ jobs:
     - name: Create Windows setup script
       if: github.ref == 'refs/heads/main'
       run: |
-        @"
+        cat > setup-windows.bat << 'EOL'
         @echo off
         echo Setting up R3 System...
         docker compose up -d
@@ -126,8 +126,7 @@ jobs:
         npx prisma generate
         npx prisma db push
         echo Setup complete! Run 'npm run dev' to start the application.
-        "@ > setup-windows.bat
-      shell: pwsh
+        EOL
 
     - name: Upload Windows setup artifacts
       if: github.ref == 'refs/heads/main'
