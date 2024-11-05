@@ -3,107 +3,113 @@
 ## Project Overview
 R3 (Root Request Router) is a middleware layer application that connects different platforms and networks through a user-friendly interface. The system serves as a connectivity hub with potential for monetization through both the middleware layer and future modular extensions.
 
-## Project Structure
-```
-D:\R3\
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── data/
-│   │   │       ├── access-control-api.ts
-│   │   │       └── data-api-routes.ts
-│   │   ├── components/
-│   │   ├── styles/
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── data/
-│   │   │   ├── data-dashboard.tsx
-│   │   │   └── enhanced-data-dashboard.tsx
-│   │   ├── layout/
-│   │   │   └── Navbar.tsx
-│   │   ├── ui/
-│   │   └── permission-management-extended.tsx
-│   ├── lib/
-│   ├── services/
-│   │   └── websocket-service.ts
-│   └── types/
-```
-
 ## Technology Stack
 - Framework: Next.js 14 with TypeScript
-- Styling: Tailwind CSS
-- Database: PostgreSQL (via Docker)
-- Caching: Redis (via Docker)
-- State Management: [To be determined]
-- Testing: [To be implemented]
+- Database: PostgreSQL via Prisma ORM
+- Caching: Redis
+- Testing: Jest with React Testing Library
+- Container: Docker
+- CI/CD: GitHub Actions
+- Package Registry: GitHub Container Registry (GHCR)
 
-## Key Components
+## Development Progress & Learnings
 
-### API Layer
-- Location: `src/app/api/data/`
-- Handles data management and access control
-- RESTful endpoints for system integration
+### Current Status
+1. Basic project structure set up with Next.js
+2. CI pipeline implemented with:
+   - Automated testing
+   - Docker build process
+   - GHCR integration
+3. Database schema defined with Prisma:
+   - User model
+   - DataAccess model
+   - Permission model
 
-### Data Dashboard
-- Location: `src/components/data/`
-- Provides visualization and management interface
-- Enhanced version includes advanced features
+### Key Learnings
+1. Testing Setup:
+   - Need to use `require` instead of `import` in jest-setup.js
+   - Jest configuration requires specific TypeScript handling
+   - CI environment needs explicit dependency installation
 
-### Services
-- WebSocket service for real-time updates
-- Docker integration for database and caching
-- Authentication and authorization services
+2. Docker Considerations:
+   - Multi-stage builds for optimal image size
+   - Node version compatibility (currently using Node 20)
+   - Security considerations (non-root user)
 
-## Current Development Status
-- Basic project structure established
-- Core components implemented
-- Docker configuration in place
-- Development environment configured
+3. Database Schema Evolution:
+   - Started with basic User model
+   - Added DataAccess and Permission models
+   - Using Prisma for type-safe database access
 
-## Development Approach
-- Single developer workflow with AI assistance
-- CI/CD pipeline planned for test/production
-- Using Docker Desktop for local development
-- GitHub repository for version control
+## Important Files & Their Purposes
 
-## Next Steps
-1. Consolidate component organization
-2. Set up CI/CD pipeline
-3. Implement remaining core features
-4. Add test coverage
-5. Document API endpoints
+### Configuration Files
+- `docker-compose.yml`: Container orchestration
+- `.github/workflows/ci.yml`: CI pipeline definition
+- `jest.setup.js`: Testing configuration
+- `prisma/schema.prisma`: Database schema
 
-## Environment Setup
-```bash
-# Required environment variables
+### Core Components
+- `src/lib/prisma.ts`: Database client singleton
+- `src/app/api/data/access-control-api.ts`: Access control endpoints
+- `Dockerfile`: Container build definition
+
+## Environment Setup Requirements
+```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/r3_dev
 REDIS_URL=redis://localhost:6379
 NODE_ENV=development
 ```
 
-## Scripts and Commands
-```bash
-# Development
-npm run dev         # Start development server
-npm run build      # Build production version
-npm run lint       # Run linting
+## Common Tasks
 
-# Docker
-docker-compose up  # Start Docker services
-docker-compose down # Stop Docker services
+### Development
+```bash
+npm run dev     # Start development server
+npm test       # Run tests
+npm run build  # Build for production
 ```
 
-## Important Notes
-- Project aims for modular architecture
-- Focus on maintainable and scalable code
-- Regular documentation updates needed
-- Security considerations for middleware layer
+### Docker Operations
+```bash
+docker build -t r3-system:test .
+docker run -p 3000:3000 r3-system:test
+```
 
-## Future Updates
-This documentation should be updated when:
-1. New major features are added
-2. Architecture changes are made
-3. New dependencies are introduced
-4. Development workflow changes
+### Database Management
+```bash
+npx prisma generate  # Generate Prisma client
+npx prisma db push   # Push schema changes
+```
+
+## Next Steps & TODOs
+1. Complete access control implementation
+2. Add Redis caching layer
+3. Implement authentication with NextAuth
+4. Set up monitoring and logging
+5. Create user documentation
+
+## Known Issues & Solutions
+1. Jest ES Module Issues:
+   - Solution: Use require instead of import in setup files
+   - Added proper TypeScript configuration
+
+2. Docker Build Challenges:
+   - Missing dependencies in build process
+   - Added proper dependency management
+   - Updated Node version compatibility
+
+3. CI Pipeline Considerations:
+   - Need to sync package-lock.json
+   - Added proper secret management
+   - Updated to Node 20 for better compatibility
+
+## Additional Resources
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+## Contact & Support
+- GitHub Repository: [marc-2019/R3](https://github.com/marc-2019/R3)
+- Project Lead: marc-2019
+

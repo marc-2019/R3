@@ -1,5 +1,4 @@
 // src/components/NavigationLayout.tsx
-
 'use client';
 
 import React, { useState } from 'react';
@@ -13,11 +12,13 @@ import {
   Activity,
   Database,
   Users,
-  HardDrive
+  HardDrive,
+  Globe // Add this import
 } from 'lucide-react';
 
 const NavigationLayout = () => {
   const [currentSection, setCurrentSection] = useState('dashboard');
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   const navigationItems = [
     {
@@ -61,7 +62,17 @@ const NavigationLayout = () => {
       name: 'Settings',
       icon: Settings,
       description: 'System configuration',
-      path: '/settings'
+      path: '/settings',
+      subItems: [
+        {
+          id: 'network-settings',
+          name: 'Network Settings',
+          icon: Globe,
+          description: 'Configure Root Network connections',
+          path: '/settings/network'
+        }
+        // Add more settings sub-items here as needed
+      ]
     }
   ];
 
@@ -93,33 +104,56 @@ const NavigationLayout = () => {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link
-                key={item.id}
-                href={item.path}
-                className={`cursor-pointer transition-all hover:shadow-lg 
-                  ${currentSection === item.id ? 'ring-2 ring-blue-500' : ''}
-                  bg-white rounded-lg p-6 relative`}
-                onClick={() => setCurrentSection(item.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <Icon className="h-6 w-6 text-blue-500" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-lg">{item.name}</h3>
-                        {item.badge && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
+              <div key={item.id}>
+                <Link
+                  href={item.path}
+                  className={`cursor-pointer transition-all hover:shadow-lg 
+                    ${currentSection === item.id ? 'ring-2 ring-blue-500' : ''}
+                    bg-white rounded-lg p-6 relative`}
+                  onClick={() => {
+                    setCurrentSection(item.id);
+                    if (item.id === 'settings') {
+                      setSettingsExpanded(!settingsExpanded);
+                    }
+                  }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <Icon className="h-6 w-6 text-blue-500" />
                       </div>
-                      <p className="text-gray-500 text-sm">{item.description}</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-lg">{item.name}</h3>
+                          {item.badge && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-500 text-sm">{item.description}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+                {item.subItems && settingsExpanded && currentSection === 'settings' && (
+                  <div className="mt-2 ml-4 space-y-2">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <Link
+                          key={subItem.id}
+                          href={subItem.path}
+                          className="flex items-center gap-2 p-3 hover:bg-gray-50 rounded-md"
+                        >
+                          <SubIcon className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm text-gray-700">{subItem.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
