@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Web3Service, NetworkType, NetworkConfig, NETWORK_CONFIGS } from '@/services/web3';
+import { Web3Service, NetworkType, NetworkConfig, NETWORK_CONFIGS } from '../../../services/web3';
 
 const NetworkSettingsForm = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(NETWORK_CONFIGS[NetworkType.TESTNET]);
