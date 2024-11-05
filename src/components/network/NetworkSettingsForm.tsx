@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -56,8 +57,13 @@ const NetworkSettingsForm = () => {
     lastError: undefined as string | undefined
   });
 
-  const handleNetworkSelect = (networkType: NetworkType) => {
-    setSelectedNetwork(NETWORK_CONFIGS[networkType]);
+  const networkOptions = Object.entries(NETWORK_CONFIGS).map(([value, config]) => ({
+    value,
+    label: config.name
+  }));
+
+  const handleNetworkSelect = (value: string) => {
+    setSelectedNetwork(NETWORK_CONFIGS[value as NetworkType]);
   };
 
   const handleConnect = async () => {
@@ -116,20 +122,12 @@ const NetworkSettingsForm = () => {
         </div>
 
         {/* Network Selection */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Network</label>
-          <div className="flex gap-2">
-            {Object.entries(NETWORK_CONFIGS).map(([key, network]) => (
-              <Button
-                key={key}
-                variant={selectedNetwork.networkType === key ? "default" : "outline"}
-                onClick={() => handleNetworkSelect(key as NetworkType)}
-              >
-                {network.name}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <Select
+          label="Network"
+          options={networkOptions}
+          value={selectedNetwork.networkType}
+          onChange={(e) => handleNetworkSelect(e.target.value)}
+        />
 
         {/* Custom Network Input */}
         <div className="space-y-4">
