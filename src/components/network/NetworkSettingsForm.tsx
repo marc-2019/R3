@@ -13,7 +13,7 @@ import {
   NetworkType, 
   NetworkConfig, 
   NETWORK_CONFIGS 
-} from '../../../services/web3Service';  // Changed to relative path
+} from './web3Service';  // Local import
 
 const NetworkSettingsForm = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(NETWORK_CONFIGS[NetworkType.TESTNET]);
