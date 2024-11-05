@@ -12,19 +12,17 @@ import {
   Web3Service, 
   NetworkType, 
   NetworkConfig, 
-  NETWORK_CONFIGS 
-} from './web3Service';  // Local import
+  NETWORK_CONFIGS,
+  ConnectionStatus 
+} from './web3Service';
 
 const NetworkSettingsForm = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(NETWORK_CONFIGS[NetworkType.TESTNET]);
   const [customRpcUrl, setCustomRpcUrl] = useState('');
   const [customChainId, setCustomChainId] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState({
-    isConnected: false,
-    currentBlock: undefined as number | undefined,
-    latency: undefined as number | undefined,
-    lastError: undefined as string | undefined
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
+    isConnected: false
   });
 
   const networkOptions = Object.entries(NETWORK_CONFIGS).map(([value, config]) => ({
@@ -48,8 +46,6 @@ const NetworkSettingsForm = () => {
     } catch (error) {
       setConnectionStatus({
         isConnected: false,
-        currentBlock: undefined,
-        latency: undefined,
         lastError: error instanceof Error ? error.message : 'Connection failed'
       });
     } finally {
