@@ -10,13 +10,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Web3 from 'web3';
 
-// Types
+// Types remain the same
 enum NetworkType {
   MAINNET = 'mainnet',
   TESTNET = 'testnet',
   PORCINI = 'porcini'
 }
 
+// NetworkConfig interface remains the same
 interface NetworkConfig {
   rpcUrl: string;
   chainId: number;
@@ -24,6 +25,7 @@ interface NetworkConfig {
   name: string;
 }
 
+// NETWORK_CONFIGS constant remains the same
 const NETWORK_CONFIGS: Record<NetworkType, NetworkConfig> = {
   [NetworkType.MAINNET]: {
     rpcUrl: 'https://root.rootnet.live',
@@ -156,9 +158,8 @@ const NetworkSettingsForm = () => {
 
         {/* Error Display */}
         {connectionStatus.lastError && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+          <Alert variant="error">
+            <AlertTitle>Connection Error</AlertTitle>
             <AlertDescription>{connectionStatus.lastError}</AlertDescription>
           </Alert>
         )}
