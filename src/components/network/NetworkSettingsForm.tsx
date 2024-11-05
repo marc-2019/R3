@@ -1,51 +1,14 @@
 // src/components/network/NetworkSettingsForm.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import Web3 from 'web3';
-
-// Types remain the same
-enum NetworkType {
-  MAINNET = 'mainnet',
-  TESTNET = 'testnet',
-  PORCINI = 'porcini'
-}
-
-// NetworkConfig interface remains the same
-interface NetworkConfig {
-  rpcUrl: string;
-  chainId: number;
-  networkType: NetworkType;
-  name: string;
-}
-
-// NETWORK_CONFIGS constant remains the same
-const NETWORK_CONFIGS: Record<NetworkType, NetworkConfig> = {
-  [NetworkType.MAINNET]: {
-    rpcUrl: 'https://root.rootnet.live',
-    chainId: 7668,
-    networkType: NetworkType.MAINNET,
-    name: 'Root Network Mainnet'
-  },
-  [NetworkType.TESTNET]: {
-    rpcUrl: 'https://api-test.rootnet.app',
-    chainId: 7672,
-    networkType: NetworkType.TESTNET,
-    name: 'Root Network Testnet'
-  },
-  [NetworkType.PORCINI]: {
-    rpcUrl: 'https://api.rootnet.app/porcini',
-    chainId: 7672,
-    networkType: NetworkType.PORCINI,
-    name: 'Root Network Porcini'
-  }
-};
+import { Web3Service, NetworkType, NetworkConfig, NETWORK_CONFIGS } from '@/services/web3';
 
 const NetworkSettingsForm = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(NETWORK_CONFIGS[NetworkType.TESTNET]);
@@ -71,20 +34,11 @@ const NetworkSettingsForm = () => {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      const web3 = new Web3(selectedNetwork.rpcUrl);
-      const networkId = await web3.eth.net.getId();
+      const web3Service = Web3Service.getInstance();
+      await web3Service.connect(selectedNetwork);
       
-      if (networkId !== selectedNetwork.chainId) {
-        throw new Error(`Network ID mismatch. Expected ${selectedNetwork.chainId}, got ${networkId}`);
-      }
-
-      const currentBlock = await web3.eth.getBlockNumber();
-      
-      setConnectionStatus({
-        isConnected: true,
-        currentBlock,
-        latency: undefined,
-        lastError: undefined
+      web3Service.onStatusChange((status) => {
+        setConnectionStatus(status);
       });
     } catch (error) {
       setConnectionStatus({
