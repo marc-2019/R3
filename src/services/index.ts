@@ -1,2 +1,2 @@
 // src/services/index.ts
-export * from './web3';
+export * from './web3/index';
