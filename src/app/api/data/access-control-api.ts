@@ -1,62 +1,80 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+// src/app/api/data/access-control-api.ts
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { z } from 'zod';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
-
-export default NextAuth({
-  providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          throw new Error('Missing username or password');
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username },
-        });
-
-        if (!user) {
-          throw new Error('User not found');
-        }
-
-        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isValidPassword) {
-          throw new Error('Invalid password');
-        }
-
-        // Convert id to string to match NextAuth expected type
-        return { id: user.id.toString(), name: user.username, email: user.email };
-      },
-    }),
-  ],
-  callbacks: {
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub;
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id.toString(); // Ensure token ID is a string
-      }
-      return token;
-    },
-  },
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
-  },
-  session: {
-    strategy: 'jwt',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+// Validation schemas
+const accessRequestSchema = z.object({
+  userId: z.number(), // Changed from string to number
+  permissionIds: z.array(z.number()) // Changed from string to number
 });
+
+export async function GET() {
+  try {
+    const session = await getServerSession();
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+      const accessList = await prisma.dataAccess.findMany({
+        include: {
+          user: true,
+          permissions: true
+        }
+      });
+
+      return NextResponse.json(accessList);
+    } catch (error) {
+      console.error('Database error:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+  } catch (error) {
+    console.error('Server error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession();
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const validation = accessRequestSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+
+    const { userId, permissionIds } = validation.data;
+
+    try {
+      const dataAccess = await prisma.dataAccess.create({
+        data: {
+          userId, // Now correctly typed as number
+          permissions: {
+            connect: permissionIds.map(id => ({ id })) // Now correctly typed as number[]
+          }
+        },
+        include: {
+          user: true,
+          permissions: true
+        }
+      });
+
+      return NextResponse.json(dataAccess);
+    } catch (error) {
+      console.error('Database error:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+  } catch (error) {
+    console.error('Server error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
