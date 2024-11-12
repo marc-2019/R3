@@ -1,13 +1,16 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(jose|next-auth)/)', // Allow Jest to transform jose and next-auth packages
+    'node_modules/(?!(jose|next-auth)/)',
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1', // Map @/ to the src directory
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js'
+  ]
 };
