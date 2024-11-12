@@ -1,5 +1,5 @@
-// Add custom jest matchers from @testing-library/jest-dom
-import '@testing-library/jest-dom';
+// Use require instead of import
+require('@testing-library/jest-dom');
 
 // Mock fetch globally
 global.fetch = jest.fn();
