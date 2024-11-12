@@ -54,11 +54,13 @@ export async function POST(req: { json: () => Promise<any> }) {
 
     const { userId, permissionIds } = validation.data;
 
+    const numericUserId = parseInt(userId, 10); // Convert userId to a number if it's currently a string
+
     const dataAccess = await prisma.dataAccess.create({
       data: {
-        userId,
+        userId: numericUserId, // userId must be a number
         permissions: {
-          connect: permissionIds.map(id => ({ id }))
+          connect: permissionIds.map(id => ({ id: parseInt(id, 10) })) // Ensure permissionIds are numbers
         }
       },
       include: {
