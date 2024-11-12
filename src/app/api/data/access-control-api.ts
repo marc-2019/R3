@@ -1,77 +1,62 @@
-import { getServerSession } from 'next-auth/next';
-import { z } from 'zod';
-import prisma from '@/lib/prisma';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
-// Validation schemas
-const accessRequestSchema = z.object({
-  userId: z.string(),
-  permissionIds: z.array(z.string())
-});
+const prisma = new PrismaClient();
 
-// Generic handler function that takes in standard request-like and response-like objects
-export async function GET(req: { url: string }) {
-  try {
-    const session = await getServerSession();
-
-    if (!session) {
-      return { status: 401, json: async () => ({ error: 'Unauthorized' }) };
-    }
-
-    try {
-      // Get data access permissions
-      const accessList = await prisma.dataAccess.findMany({
-        include: {
-          user: true,
-          permissions: true
-        }
-      });
-
-      return { status: 200, json: async () => accessList };
-    } catch (error) {
-      console.error('Database error:', error);
-      return { status: 500, json: async () => ({ error: 'Internal Server Error' }) };
-    }
-  } catch (error) {
-    console.error('Server error:', error);
-    return { status: 500, json: async () => ({ error: 'Internal Server Error' }) };
-  }
-}
-
-export async function POST(req: { json: () => Promise<any> }) {
-  try {
-    const session = await getServerSession();
-
-    if (!session) {
-      return { status: 401, json: async () => ({ error: 'Unauthorized' }) };
-    }
-
-    const body = await req.json();
-    const validation = accessRequestSchema.safeParse(body);
-
-    if (!validation.success) {
-      return { status: 400, json: async () => ({ error: validation.error }) };
-    }
-
-    const { userId, permissionIds } = validation.data;
-
-    const numericUserId = parseInt(userId, 10); // Convert userId to a number if it's currently a string
-
-    const dataAccess = await prisma.dataAccess.create({
-      data: {
-        userId: numericUserId, // userId must be a number
-        permissions: {
-          connect: permissionIds.map(id => ({ id: parseInt(id, 10) })) // Ensure permissionIds are numbers
-        }
+export default NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
-      include: {
-        user: true,
-        permissions: true
-      }
-    });
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error('Missing username or password');
+        }
 
-    return { status: 200, json: async () => dataAccess };
-  } catch (error) {
-    console.error('Server error:', error);
-    return { status: 500, json: async () => ({ error: 'Internal Server Error' }) };
-  }
-}
+        const user = await prisma.user.findUnique({
+          where: { username: credentials.username },
+        });
+
+        if (!user) {
+          throw new Error('User not found');
+        }
+
+        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+
+        if (!isValidPassword) {
+          throw new Error('Invalid password');
+        }
+
+        // Convert id to string to match NextAuth expected type
+        return { id: user.id.toString(), name: user.username, email: user.email };
+      },
+    }),
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id.toString(); // Ensure token ID is a string
+      }
+      return token;
+    },
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
+  session: {
+    strategy: 'jwt',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+});
