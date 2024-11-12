@@ -14,7 +14,7 @@ import {
   NetworkConfig, 
   NETWORK_CONFIGS,
   ConnectionStatus 
-} from './web3Service';
+} from '@/services/web3Service';  // Updated import path
 
 const NetworkSettingsForm = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(NETWORK_CONFIGS[NetworkType.TESTNET]);

@@ -9,8 +9,8 @@ interface DockerService {
 }
 
 const REQUIRED_SERVICES: DockerService[] = [
-  { name: 'r3-postgres', port: 5432, required: true },
-  { name: 'r3-redis', port: 6379, required: true }
+  { name: 'r3-db-1', port: 5432, required: true },  // Updated container name
+  { name: 'r3-redis-1', port: 6379, required: true }  // Updated container name
 ];
 
 export class DockerHealthCheck {

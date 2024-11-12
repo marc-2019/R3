@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\prisma",
+    "\\public",
+    "\\scripts",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\api",
+    "\\src\\app\\api\\data",
+    "\\src\\app\\api\\health",
+    "\\src\\app\\api\\settings"
+  ],
+  "SelectedNode": "\\src\\app\\api\\data\\access-control-api.ts",
+  "PreviewInSolutionExplorer": false
+}
