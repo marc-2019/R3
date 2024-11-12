@@ -1,13 +1,10 @@
-// File: src/app/api/auth/[...nextauth].ts
-
+// src/app/api/auth/[...nextauth].ts
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { compare } from 'bcrypt';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
-
-export default NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -20,44 +17,40 @@ export default NextAuth({
           throw new Error('Missing username or password');
         }
 
+        // Find user
         const user = await prisma.user.findUnique({
-          where: { username: credentials.username },
+          where: {
+            email: credentials.username
+          }
         });
 
         if (!user) {
           throw new Error('User not found');
         }
 
-        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+        // Compare password
+        const isValid = await compare(credentials.password, user.password);
 
-        if (!isValidPassword) {
+        if (!isValid) {
           throw new Error('Invalid password');
         }
 
-        return { id: user.id, name: user.username, email: user.email };
-      },
-    }),
+        // Return user object that matches NextAuth User type
+        return {
+          id: user.id.toString(), // Convert number to string
+          name: user.name,
+          email: user.email
+        };
+      }
+    })
   ],
-  callbacks: {
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub;
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id;
-      }
-      return token;
-    },
+  session: {
+    strategy: 'jwt'
   },
   pages: {
     signIn: '/auth/signin',
-    error: '/auth/error',
-  },
-  session: {
-    strategy: 'jwt',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+    error: '/auth/error'
+  }
+};
+
+export default NextAuth(authOptions);
