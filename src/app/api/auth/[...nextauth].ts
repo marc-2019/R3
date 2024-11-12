@@ -34,7 +34,7 @@ export default NextAuth({
           throw new Error('Invalid password');
         }
 
-        return { id: user.id, name: user.username, email: user.email, role: user.role };
+        return { id: user.id, name: user.username, email: user.email };
       },
     }),
   ],
@@ -42,14 +42,12 @@ export default NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub;
-        session.user.role = token.role;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
-        token.role = user.role;
       }
       return token;
     },
