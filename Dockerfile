@@ -3,6 +3,9 @@ FROM node:20-alpine AS development
 
 WORKDIR /app
 
+# Add Python and build tools for bcrypt
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 RUN npm install
 
@@ -12,6 +15,9 @@ COPY . .
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+
+# Add Python and build tools for bcrypt
+RUN apk add --no-cache python3 make g++
 
 COPY package*.json ./
 RUN npm ci
