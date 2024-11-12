@@ -2,9 +2,14 @@ version: '3.8'
 
 services:
   app:
-    image: ghcr.io/marc-2019/r3:latest
+    build:
+      context: .
+      target: development
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/r3_dev
@@ -14,6 +19,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    command: npm run dev
 
   db:
     image: postgres:14-alpine
