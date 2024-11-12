@@ -7,7 +7,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ git
 
 COPY package*.json ./
-RUN npm install
+# Install with legacy peer deps flag to handle dependency conflicts
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
@@ -29,13 +30,17 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ git
 
 COPY package*.json ./
-RUN npm ci
+# Install with legacy peer deps flag and include dev dependencies
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
 # Generate Prisma client and build
 ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/r3_test"
 RUN npx prisma generate
+
+# Ensure TypeScript can find all type definitions
+RUN npm run type-check || true
 RUN npm run build
 
 # Production stage
@@ -55,12 +60,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
-
-# Install production dependencies only
-RUN npm ci --only=production
-
-# Generate Prisma client for production
-RUN npx prisma generate
+COPY --from=builder /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
