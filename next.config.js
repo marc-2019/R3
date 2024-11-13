@@ -1,16 +1,25 @@
-// next.config.js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    reactStrictMode: true,
-    webpack: (config) => {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        net: false,
-        tls: false,
-        fs: false,
-      };
-      return config;
-    },
-  };
-  
-  module.exports = nextConfig;
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: 'tsconfig.json',
+      isolatedModules: true
+    }]
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose|next-auth)/)'
+  ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|sass|scss)$': 'identity-obj-proxy'
+  },
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js'
+  ],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/'
+  ]
+};

@@ -1,80 +1,81 @@
-// src/app/api/data/access-control-api.ts
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { z } from 'zod';
+import { GET, POST } from './access-control-api';
 import prisma from '@/lib/prisma';
 
-// Validation schemas
-const accessRequestSchema = z.object({
-  userId: z.number(), // Changed from string to number
-  permissionIds: z.array(z.number()) // Changed from string to number
+// Mock next-auth
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn().mockResolvedValue({ user: { id: 1 } })
+}));
+
+// Mock prisma
+jest.mock('@/lib/prisma', () => ({
+  __esModule: true,
+  default: {
+    dataAccess: {
+      findMany: jest.fn().mockResolvedValue([]),
+      create: jest.fn().mockResolvedValue({})
+    }
+  }
+}));
+
+describe('Access Control API', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('GET', () => {
+    it('should return 401 if the user is not authenticated', async () => {
+      require('next-auth/next').getServerSession.mockResolvedValueOnce(null);
+      const response = await GET();
+      expect(response.status).toBe(401);
+      expect(response.json()).toEqual({ error: 'Unauthorized' });
+    });
+
+    it('should return 500 for database errors', async () => {
+      (prisma.dataAccess.findMany as jest.Mock).mockRejectedValueOnce(
+        new Error('Database connection failed')
+      );
+      const response = await GET();
+      expect(response.status).toBe(500);
+      expect(response.json()).toEqual({ error: 'Internal Server Error' });
+    });
+
+    it('should return data successfully', async () => {
+      const mockData = [{ id: 1, userId: 1 }];
+      (prisma.dataAccess.findMany as jest.Mock).mockResolvedValueOnce(mockData);
+      const response = await GET();
+      expect(response.status).toBe(200);
+      expect(response.json()).toEqual(mockData);
+    });
+  });
+
+  describe('POST', () => {
+    it('should return 401 if the user is not authenticated', async () => {
+      require('next-auth/next').getServerSession.mockResolvedValueOnce(null);
+      const response = await POST(new Request('http://localhost', {
+        method: 'POST',
+        body: JSON.stringify({ userId: 1, permissionIds: [1] })
+      }));
+      expect(response.status).toBe(401);
+      expect(response.json()).toEqual({ error: 'Unauthorized' });
+    });
+
+    it('should return 400 for invalid request body', async () => {
+      const response = await POST(new Request('http://localhost', {
+        method: 'POST',
+        body: JSON.stringify({ invalid: 'data' })
+      }));
+      expect(response.status).toBe(400);
+    });
+
+    it('should create data access successfully', async () => {
+      const mockData = { id: 1, userId: 1, permissions: [] };
+      (prisma.dataAccess.create as jest.Mock).mockResolvedValueOnce(mockData);
+      const response = await POST(new Request('http://localhost', {
+        method: 'POST',
+        body: JSON.stringify({ userId: 1, permissionIds: [1] })
+      }));
+      expect(response.status).toBe(200);
+      expect(response.json()).toEqual(mockData);
+    });
+  });
 });
-
-export async function GET() {
-  try {
-    const session = await getServerSession();
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    try {
-      const accessList = await prisma.dataAccess.findMany({
-        include: {
-          user: true,
-          permissions: true
-        }
-      });
-
-      return NextResponse.json(accessList);
-    } catch (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-  } catch (error) {
-    console.error('Server error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession();
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const validation = accessRequestSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
-    }
-
-    const { userId, permissionIds } = validation.data;
-
-    try {
-      const dataAccess = await prisma.dataAccess.create({
-        data: {
-          userId, // Now correctly typed as number
-          permissions: {
-            connect: permissionIds.map(id => ({ id })) // Now correctly typed as number[]
-          }
-        },
-        include: {
-          user: true,
-          permissions: true
-        }
-      });
-
-      return NextResponse.json(dataAccess);
-    } catch (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-  } catch (error) {
-    console.error('Server error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
