@@ -1,10 +1,9 @@
-// src/app/api/auth/[...nextauth].ts
-import NextAuth from 'next-auth';
+import NextAuth, { AuthOptions, SessionStrategy } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcryptjs';  // Changed from bcrypt to bcryptjs
+import { compare } from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -37,7 +36,7 @@ export const authOptions = {
 
         // Return user object that matches NextAuth User type
         return {
-          id: user.id.toString(), // Convert number to string
+          id: user.id.toString(),
           name: user.name,
           email: user.email
         };
@@ -45,7 +44,7 @@ export const authOptions = {
     })
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt' as SessionStrategy,  // Fix: explicitly type the strategy
   },
   pages: {
     signIn: '/auth/signin',
