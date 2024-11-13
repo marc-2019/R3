@@ -1,5 +1,18 @@
-// Use require instead of import
 require('@testing-library/jest-dom');
+
+// Mock Next.js server components
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: jest.fn((data) => ({ json: () => data })),
+    next: jest.fn(),
+    redirect: jest.fn(),
+  },
+}));
+
+// Mock Next Auth
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn(),
+}));
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -22,3 +35,10 @@ jest.mock('next/router', () => ({
 beforeEach(() => {
   jest.clearAllMocks();
 });
+
+// Global Request mock
+global.Request = class Request {
+  constructor() {
+    // Add basic Request implementation
+  }
+};
