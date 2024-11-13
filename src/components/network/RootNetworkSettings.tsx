@@ -7,11 +7,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { NetworkStats, ConnectionStatus } from '@/types/network';
-import { RootNetworkService } from '@/services/rootNetworkService';
+
+type NetworkStats = {
+  chain?: string;
+  version?: string;
+  blockNumber?: number;
+  health?: {
+    peers: number;
+  };
+};
+
+type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
 const RootNetworkSettings = () => {
-  const [network, setNetwork] = useState<RootNetworkService | null>(null);
+  const [network, setNetwork] = useState<any>(null); // TODO: Replace with proper RootNetworkService type
   const [endpoint, setEndpoint] = useState('ws://127.0.0.1:9944');
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [stats, setStats] = useState<NetworkStats | null>(null);
@@ -30,7 +39,8 @@ const RootNetworkSettings = () => {
       setStatus('connecting');
       setError(null);
 
-      const networkService = new RootNetworkService(endpoint);
+      // TODO: Replace with proper RootNetworkService instantiation
+      const networkService = new (window as any).RootNetworkService(endpoint);
       
       networkService.on('connectionStatus', (isConnected: boolean) => {
         setStatus(isConnected ? 'connected' : 'disconnected');
@@ -65,35 +75,44 @@ const RootNetworkSettings = () => {
     }
   };
 
+  const renderStatus = () => {
+    const statusConfig = {
+      connected: { icon: CheckCircle2, color: 'text-green-500' },
+      disconnected: { icon: AlertCircle, color: 'text-yellow-500' },
+      connecting: { icon: Loader2, color: 'text-blue-500' },
+      error: { icon: AlertCircle, color: 'text-red-500' }
+    };
+
+    const { icon: Icon, color } = statusConfig[status];
+    
+    return (
+      <div className="rounded-lg border p-4">
+        <div className="flex items-center space-x-2">
+          <Icon className={`h-5 w-5 ${color}`} />
+          <h3 className="font-semibold">
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </h3>
+        </div>
+        {stats && (
+          <div className="mt-2 text-sm text-gray-500">
+            <p>Chain: {stats.chain}</p>
+            <p>Version: {stats.version}</p>
+            <p>Block: #{stats.blockNumber}</p>
+            <p>Peers: {stats.health?.peers}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Root Network Connection</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Connection Status */}
-        <div className="rounded-lg border p-4">
-          <div className="flex items-center space-x-2">
-            {status === 'connected' ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            ) : (
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-            )}
-            <h3 className="font-semibold">
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </h3>
-          </div>
-          {stats && (
-            <div className="mt-2 text-sm text-gray-500">
-              <p>Chain: {stats.chain}</p>
-              <p>Version: {stats.version}</p>
-              <p>Block: #{stats.blockNumber}</p>
-              <p>Peers: {stats.health?.peers}</p>
-            </div>
-          )}
-        </div>
+        {renderStatus()}
 
-        {/* WebSocket Endpoint Input */}
         <div className="space-y-2">
           <label className="text-sm font-medium">WebSocket Endpoint</label>
           <Input
@@ -104,16 +123,14 @@ const RootNetworkSettings = () => {
           />
         </div>
 
-        {/* Error Display */}
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="error">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Action Buttons */}
         <div className="flex gap-4">
           <Button
             onClick={handleConnect}
