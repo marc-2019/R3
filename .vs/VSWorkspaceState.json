@@ -1,16 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\prisma",
-    "\\public",
-    "\\scripts",
     "\\src",
     "\\src\\app",
-    "\\src\\app\\api",
-    "\\src\\app\\api\\data",
-    "\\src\\app\\api\\health",
-    "\\src\\app\\api\\settings"
+    "\\src\\app\\styles",
+    "\\src\\components",
+    "\\src\\components\\auth",
+    "\\src\\components\\layout",
+    "\\src\\components\\network",
+    "\\src\\components\\permissions",
+    "\\src\\components\\ui"
   ],
-  "SelectedNode": "\\src\\app\\api\\data\\access-control-api.ts",
+  "SelectedNode": "\\src\\components\\auth\\LoginPage.tsx",
   "PreviewInSolutionExplorer": false
 }

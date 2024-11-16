@@ -15,9 +15,16 @@ model User {
   username   String       @unique
   password   String
   name       String?
+  role       UserRole     @default(USER)  // Add this line
   dataAccess DataAccess[]
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SYSTEM
 }
 
 model DataAccess {

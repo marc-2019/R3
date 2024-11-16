@@ -1,11 +1,15 @@
 // src/app/settings/network/page.tsx
-import { NetworkSettingsContainer } from '@/components/network/NetworkSettingsContainer';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from '@/lib/auth';
+import { redirect } from "next/navigation";
+import NetworkSettingsContent from '@/components/network/NetworkSettingsContent';
 
-export default function NetworkSettingsPage() {
-  return (
-    <div className="container mx-auto py-6">
-      <h2 className="text-2xl font-bold mb-6">Network Settings</h2>
-      <NetworkSettingsContainer />
-    </div>
-  );
+export default async function NetworkSettingsPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/auth/login");
+  }
+
+  return <NetworkSettingsContent />;
 }

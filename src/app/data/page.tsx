@@ -1,12 +1,15 @@
 // src/app/data/page.tsx
-'use client';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from '@/lib/auth';
+import { redirect } from "next/navigation";
+import DataPageContent from '@/components/data/DataPageContent';
 
-import { PermissionManagement } from '@/components/permissions';
+export default async function DataPage() {
+  const session = await getServerSession(authOptions);
 
-export default function DataPage() {
-  return (
-    <div>
-      <PermissionManagement />
-    </div>
-  );
+  if (!session) {
+    redirect("/auth/login");
+  }
+
+  return <DataPageContent />;
 }

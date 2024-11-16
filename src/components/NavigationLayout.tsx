@@ -1,165 +1,127 @@
 // src/components/NavigationLayout.tsx
+// Description: Main navigation component with improved styling and mobile support
+
 'use client';
 
-import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
+  LayoutDashboard, 
   Network, 
-  Layers, 
-  Settings,
-  Home,
-  Box,
-  Activity,
+  Users, 
   Database,
-  Users,
-  HardDrive,
-  Globe // Add this import
+  Settings,
+  Activity
 } from 'lucide-react';
 
-const NavigationLayout = () => {
-  const [currentSection, setCurrentSection] = useState('dashboard');
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  description?: string;
+}
 
-  const navigationItems = [
-    {
-      id: 'dashboard',
-      name: 'Dashboard',
-      icon: Home,
-      description: 'System overview and status',
-      path: '/'
-    },
-    {
-      id: 'root-network',
-      name: 'Root Network',
-      icon: Network,
-      description: 'Root Network node management',
-      path: '/root-network'
-    },
-    {
-      id: 'reality2',
-      name: 'Reality 2',
-      icon: Layers,
-      description: 'Reality 2 system management',
-      path: '/reality2'
-    },
-    {
-      id: 'users',
-      name: 'User Management',
-      icon: Users,
-      description: 'Manage users and permissions',
-      path: '/users'
-    },
-    {
-      id: 'data',
-      name: 'Data Management',
-      icon: Database,
-      description: 'System data and backups',
-      badge: 'New',
-      path: '/data'
-    },
-    {
-      id: 'settings',
-      name: 'Settings',
-      icon: Settings,
-      description: 'System configuration',
-      path: '/settings',
-      subItems: [
-        {
-          id: 'network-settings',
-          name: 'Network Settings',
-          icon: Globe,
-          description: 'Configure Root Network connections',
-          path: '/settings/network'
-        }
-        // Add more settings sub-items here as needed
-      ]
-    }
-  ];
+const navItems: NavItem[] = [
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    description: 'System overview and status'
+  },
+  {
+    href: '/root-network',
+    label: 'Root Network',
+    icon: Network,
+    description: 'Root Network node management'
+  },
+  {
+    href: '/reality2',
+    label: 'Reality 2',
+    icon: Activity,
+    description: 'Reality 2 system management'
+  },
+  {
+    href: '/users',
+    label: 'User Management',
+    icon: Users,
+    description: 'Manage users and permissions'
+  },
+  {
+    href: '/data',
+    label: 'Data Management',
+    icon: Database,
+    description: 'System data and backups'
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: Settings,
+    description: 'System configuration'
+  }
+];
+
+export default function NavigationLayout() {
+  const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <Box className="h-8 w-8 text-blue-500" />
-              <span className="text-xl font-bold">R3 System</span>
+    <nav className="bg-white border-b">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Desktop Navigation */}
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link href="/dashboard" className="text-xl font-bold text-blue-600">R3</Link>
             </div>
-            <div className="flex items-center gap-4">
-              <Link href="/status" className="p-2 hover:bg-gray-100 rounded-md">
-                <Activity className="h-5 w-5" />
-              </Link>
-              <Link href="/settings" className="p-2 hover:bg-gray-100 rounded-md">
-                <Settings className="h-5 w-5" />
-              </Link>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
+              {navItems.map((item) => {
+                const isActive = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4 mr-2" />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.id}>
+        {/* Mobile Navigation */}
+        <div className="sm:hidden">
+          <div className="pt-2 pb-3 space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              return (
                 <Link
-                  href={item.path}
-                  className={`cursor-pointer transition-all hover:shadow-lg 
-                    ${currentSection === item.id ? 'ring-2 ring-blue-500' : ''}
-                    bg-white rounded-lg p-6 relative`}
-                  onClick={() => {
-                    setCurrentSection(item.id);
-                    if (item.id === 'settings') {
-                      setSettingsExpanded(!settingsExpanded);
-                    }
-                  }}
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center px-4 py-2 text-base font-medium rounded-md ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <Icon className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-lg">{item.name}</h3>
-                          {item.badge && (
-                            <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-gray-500 text-sm">{item.description}</p>
-                      </div>
-                    </div>
+                  <item.icon className="h-5 w-5 mr-3" />
+                  <div>
+                    <div>{item.label}</div>
+                    {item.description && (
+                      <div className="text-sm text-gray-500">{item.description}</div>
+                    )}
                   </div>
                 </Link>
-                {item.subItems && settingsExpanded && currentSection === 'settings' && (
-                  <div className="mt-2 ml-4 space-y-2">
-                    {item.subItems.map((subItem) => {
-                      const SubIcon = subItem.icon;
-                      return (
-                        <Link
-                          key={subItem.id}
-                          href={subItem.path}
-                          className="flex items-center gap-2 p-3 hover:bg-gray-50 rounded-md"
-                        >
-                          <SubIcon className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-700">{subItem.name}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </nav>
   );
-};
-
-export default NavigationLayout;
+}

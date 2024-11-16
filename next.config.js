@@ -2,10 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Add any Next.js specific configuration here
-  // For example:
-  // poweredByHeader: false,
-  // compress: true,
+  experimental: {
+    // Remove serverActions since it's now available by default
+  },
 };
 
 module.exports = nextConfig;

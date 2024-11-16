@@ -1,5 +1,7 @@
 // src/app/layout.tsx
 
+import { headers } from 'next/headers';
+import { Providers } from '@/components/providers';
 import NavigationLayout from '@/components/NavigationLayout';
 import '@/app/globals.css';
 
@@ -10,11 +12,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <NavigationLayout />
-        <main className="max-w-4xl mx-auto px-4 py-2"> {/* Reduced width and padding */}
-          {children}
-        </main>
+      <body className="min-h-screen bg-gray-50">
+        <Providers>
+          <NavigationLayout />
+          <main className="container mx-auto px-4 py-6">
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );
